@@ -1,0 +1,17 @@
+[Unit]
+Description=IPFS daemon
+After=syslog.target network.target remote-fs.target nss-lookup.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+Type=simple
+ExecStart=/usr/local/bin/ipfs daemon --enable-gc --enable-pubsub-experiment
+KillMode=process
+KillSignal=SIGINT
+Restart=always
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target
+

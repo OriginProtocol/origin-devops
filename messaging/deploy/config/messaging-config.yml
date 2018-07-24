@@ -1,0 +1,22 @@
+---
+ansible_ssh_private_key_file: <path to key, or pass into CLI>
+
+nginx_directory: /opt/nginx
+nginx_log_directory: /var/log/nginx
+nginx_access_log: /var/log/nginx/access.log
+nginx_error_log: /var/log/nginx/error.log
+nginx_ipfs_api_proxy_port: 5002
+nginx_ipfs_gateway_proxy_port: 80
+nginx_ipfs_websocket_proxy_port: 9011
+nginx_auth_user: <user>
+nginx_auth_password: <password>
+nginx_auth_file: /etc/nginx/.htpasswd
+
+ipfs_download_url: https://dist.ipfs.io/go-ipfs/v0.4.15/go-ipfs_v0.4.15_linux-amd64.tar.gz
+ipfs_address: 0.0.0.0
+ipfs_api_port: 5001
+ipfs_gateway_port: 8080
+ipfs_websocket_port: 9012
+ipfs_log: /var/log/ipfs/ipfs.log
+ipfs_pid: /var/run/ipfs.pid
+

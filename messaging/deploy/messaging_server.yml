@@ -1,0 +1,32 @@
+---
+- hosts: all
+  vars_files:
+    - config/messaging-config.yml
+  become: yes
+  pre_tasks:
+    - hostname:
+        name: messaging
+    - name: Packages for managing PPAs
+      apt:
+        name: software-properties-common
+        state: latest
+        update_cache: yes
+    - name: install python and pip
+      apt:
+        name: "{{ item }}"
+        update_cache: yes
+      with_items:
+        - python2.7
+        - python3
+        - python-pip
+        - python3-pip
+  roles:
+    - htpasswd
+    - nginx
+    - ipfs
+    # orbit?
+    # prometheus
+  post_tasks:
+    - name: Print IPFS peer ID
+      debug:
+        msg: "{{ inventory_hostname }} - {{ hostvars[inventory_hostname].ansible_hostname }}'s IPFS Peer ID: {{ ipfs_peer_id.stdout }}"
