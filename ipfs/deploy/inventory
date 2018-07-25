@@ -1,6 +1,5 @@
 [gateways]
-xx.xx.xx.xx				ansible_python_interpreter=/usr/bin/python3
-xx.xx.xx.xx				ansible_python_interpreter=/usr/bin/python3
+52.25.124.195				ansible_python_interpreter=/usr/bin/python3
+52.38.111.162				ansible_python_interpreter=/usr/bin/python3
 
 [shadow_server]
-xx.xx.xx.xx

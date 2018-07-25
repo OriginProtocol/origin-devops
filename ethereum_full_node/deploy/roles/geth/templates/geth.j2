@@ -1,0 +1,8 @@
+{{ geth_log_directory }}/*.log {
+    weekly
+    missingok
+    rotate 52
+    notifempty
+    create 640 {{ geth_user }} {{ geth_user_group }}
+    sharedscripts
+}
