@@ -1,0 +1,6 @@
+[gateways]
+xx.xx.xx.xx				ansible_python_interpreter=/usr/bin/python3
+xx.xx.xx.xx				ansible_python_interpreter=/usr/bin/python3
+
+[shadow_server]
+xx.xx.xx.xx
