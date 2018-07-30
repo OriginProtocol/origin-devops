@@ -32,7 +32,7 @@
   shell: "ipfs config {{ item.key }} {{ item.value }}"
   with_items:
     - { key: 'Addresses.API', value: '/ip4/{{ ipfs_address }}/tcp/{{ ipfs_api_port }}'}
-    - { key: 'Addresses.Gateway', value: '/ip4/{{ ipfs_address }}/tcp/{{ ipfs_gateway_port }}'}
+    # - { key: 'Addresses.Gateway', value: '/ip4/{{ ipfs_address }}/tcp/{{ ipfs_gateway_port }}'} This is turned off for messaging
   become: yes
   become_user: ubuntu
   notify: restart ipfs service

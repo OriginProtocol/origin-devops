@@ -1,0 +1,23 @@
+[Unit]
+Description=Orbit / Messaging
+After=syslog.target network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+WorkingDirectory={{ messaging_directory }}
+Environment=NODE_PATH=/opt/orbit/node_modules
+Environment=HOME={{ messaging_directory }}
+Environment=RPC_SERVER={{ messaging_rpc_server }}
+Environment=MESSAGING_IPFS_AUTH_TOKEN={{ messaging_ipfs_auth_token }}
+Environment=MESSAGING_IPFS_URL={{ messaging_ipfs_url }}
+Type=simple
+ExecStart=/usr/bin/node {{ messaging_directory }}/index.js
+KillMode=process
+KillSignal=SIGINT
+TimeoutStopSec=90
+Restart=always
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

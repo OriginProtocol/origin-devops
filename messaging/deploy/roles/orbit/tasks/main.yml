@@ -1,0 +1,64 @@
+---
+# node.js installation could be seperated out into a role dependency of orbit
+
+- name: add node 10.x PPA
+  script: nodesource_setup.sh
+  become: yes
+
+- name: install nodejs
+  apt:
+    name: nodejs
+    state: present
+    update_cache: yes
+
+- name: messaging directory exists
+  file:
+    path: "{{ messaging_directory }}"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+    state: directory
+
+- name: messaging / orbit server (index.js)
+  copy:
+    src: index.js
+    dest: "{{ messaging_directory }}"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0644
+
+- name: messaging node modules directory exists
+  file:
+    path: "{{ messaging_directory }}/node_modules"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+    state: directory
+
+- name: install npm libraries
+  become: yes
+  become_user: ubuntu
+  npm:
+    name: "{{ item }}"
+    state: latest
+    path: "{{ messaging_directory }}/node_modules"
+    executable: /usr/bin/npm
+  with_items:
+    - web3
+    - lodash
+    - ipfs-api
+    - orbit-db
+    - orbit-db-keystore
+    - dotenv
+
+- name: messaging systemd configuration
+  template:
+    src: messaging.service.j2
+    dest: /etc/systemd/system/messaging.service
+  notify: restart messaging service
+
+- name: enable messaging service
+  systemd:
+    name: messaging
+    enabled: yes
+    masked: no
