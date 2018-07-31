@@ -22,6 +22,19 @@
     group: www-data
     backup: yes
 
+- name: remove default nginx config
+  file:
+    path: /etc/nginx/nginx.conf
+    state: absent
+
+- name: link default nginx config location
+  file:
+    src: "{{ nginx_directory }}/nginx.conf"
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    state: link
+
 # https://www.nginx.com/resources/wiki/start/topics/examples/systemd/
 - name:  nginx systemd configuration
   template:

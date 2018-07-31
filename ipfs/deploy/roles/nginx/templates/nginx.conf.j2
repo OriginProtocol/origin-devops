@@ -47,15 +47,18 @@ http {
         server {{ ipfs_address }}:{{ ipfs_gateway_port }};
     }
 
+    # For Certbot
+    # https://community.letsencrypt.org/t/how-to-nginx-configuration-to-enable-acme-challenge-support-on-all-http-virtual-hosts/5622
+    server {
+        listen 80;
+        location ^~ /.well-known/acme-challenge/ {
+            root         /var/www/letsencrypt;
+        }
+    }
 
     server {
         listen               {{ nginx_ipfs_api_proxy_port }};
-        # server_name          <configured>.originprotocol.com;
-        # ssl                  on;
-        # ssl_certificate      ;
-        # ssl_certificate_key  ;
-        #ssl_protocols TLSv1 TLSv1.1 TLSv1.2 SSLv3;
-        #proxy_set_header     SSL on;
+        server_name          {{ nginx_server_name }};
 
         location ^~ /api/v0/add {
             proxy_http_version 1.1;
@@ -76,12 +79,7 @@ http {
 
     server {
         listen                 {{ nginx_ipfs_gateway_proxy_port }};
-        # server_name          <configured>.originprotocol.com;
-        # ssl                  on;
-        # ssl_certificate      ;
-        # ssl_certificate_key  ;
-        #ssl_protocols TLSv1 TLSv1.1 TLSv1.2 SSLv3;
-        #proxy_set_header     SSL on;
+        server_name            {{ nginx_server_name }};
 
         location ^~ /ipfs/ {
             proxy_http_version 1.1;
