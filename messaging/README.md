@@ -1,6 +1,6 @@
 ## IPFS Messaging server
 
-This playbook installs a decentralized messaging server with [IPFS] (https://ipfs.io/) and [Orbit] (https://github.com/orbitdb), with HTTP basic authentication
+This playbook installs a decentralized messaging server with [IPFS](https://ipfs.io/) and [Orbit](https://github.com/orbitdb), with HTTP basic authentication
 
 Messaging code (index.js) is from origin-bridge/8a476fd1d82a367707bad21ec78a89d61577eec0
 
