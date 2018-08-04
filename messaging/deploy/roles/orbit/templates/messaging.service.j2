@@ -12,7 +12,7 @@ Environment=RPC_SERVER={{ messaging_rpc_server }}
 Environment=MESSAGING_IPFS_AUTH_TOKEN={{ messaging_ipfs_auth_token }}
 Environment=MESSAGING_IPFS_URL={{ messaging_ipfs_url }}
 Type=simple
-ExecStart=/usr/bin/node {{ messaging_directory }}/index.js
+ExecStart=/usr/bin/npm start
 KillMode=process
 KillSignal=SIGINT
 TimeoutStopSec=90

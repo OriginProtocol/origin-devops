@@ -19,10 +19,34 @@
     mode: 0755
     state: directory
 
-- name: messaging / orbit server (index.js)
+- name: package.json
   copy:
-    src: index.js
+    src: package.json
     dest: "{{ messaging_directory }}"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+
+- name: .babelrc file
+  copy:
+    src: dot_babelrc
+    dest: "{{ messaging_directory }}/.babelrc"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+
+- name: orbit_server.js directory exists
+  file:
+    path: "{{ messaging_directory }}/js/messaging"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+    state: directory
+
+- name: orbit_server.js
+  copy:
+    src: orbit_server.js
+    dest: "{{ messaging_directory }}/js/messaging"
     owner: ubuntu
     group: ubuntu
     mode: 0644
@@ -39,17 +63,9 @@
   become: yes
   become_user: ubuntu
   npm:
-    name: "{{ item }}"
     state: latest
-    path: "{{ messaging_directory }}/node_modules"
+    path: "{{ messaging_directory }}"
     executable: /usr/bin/npm
-  with_items:
-    - web3
-    - lodash
-    - ipfs-api
-    - orbit-db
-    - orbit-db-keystore
-    - dotenv
 
 - name: messaging systemd configuration
   template:
