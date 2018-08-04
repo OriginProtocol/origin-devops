@@ -9,8 +9,6 @@
 # node can be reset without deleting .ipfs + reinitializing, by unpinning everything and issuing an ipfs repo gc
 #   can verify with ipfs refs local before and after GC
 
-# It could be that even with reseting the repo, there is still the DHT that exists for all the stuff that was just deleted
-
 import time
 import ipfsapi
 import logging
