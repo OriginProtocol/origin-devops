@@ -35,7 +35,7 @@
     group: ubuntu
     mode: 0755
 
-- name: orbit_server.js directory exists
+- name: orbit_server js directory exists
   file:
     path: "{{ messaging_directory }}/js/messaging"
     owner: ubuntu
@@ -46,6 +46,14 @@
 - name: orbit_server.js
   copy:
     src: orbit_server.js
+    dest: "{{ messaging_directory }}/js/messaging"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0644
+
+- name: exchange-heads.js
+  copy:
+    src: exchange-heads.js
     dest: "{{ messaging_directory }}/js/messaging"
     owner: ubuntu
     group: ubuntu

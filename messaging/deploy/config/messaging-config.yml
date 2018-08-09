@@ -16,6 +16,7 @@ messaging_directory: /opt/orbit
 messaging_ipfs_auth_token: <http auth token>
 messaging_ipfs_url: http://127.0.0.1:5001
 messaging_rpc_server: https://mainnet.infura.io
+messaging_namespace: dev
 
 ipfs_download_url: https://dist.ipfs.io/go-ipfs/v0.4.15/go-ipfs_v0.4.15_linux-amd64.tar.gz
 ipfs_address: 0.0.0.0

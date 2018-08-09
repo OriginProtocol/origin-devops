@@ -7,6 +7,7 @@ User=ubuntu
 Group=ubuntu
 WorkingDirectory={{ messaging_directory }}
 Environment=NODE_PATH=/opt/orbit/node_modules
+Environment=MESSAGING_NAMESPACE={{ messaging_namespace }}
 Environment=HOME={{ messaging_directory }}
 Environment=RPC_SERVER={{ messaging_rpc_server }}
 Environment=MESSAGING_IPFS_AUTH_TOKEN={{ messaging_ipfs_auth_token }}
