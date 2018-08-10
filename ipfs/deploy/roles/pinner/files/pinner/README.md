@@ -1,0 +1,1 @@
+usage: python ipfs_pinner.py -c <path_to_config_file>

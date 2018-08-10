@@ -1,0 +1,6 @@
+web3==4.4.1
+eth_abi==1.1.1
+hexbytes==0.1.0
+ipfsapi==0.4.3
+base58==1.0.0
+requests==2.19.1
