@@ -5,9 +5,9 @@ This playbook installs a persistence server for decentralized messaging, operati
 ### Provisioning
 
 1. Have an ubuntu 16.06 machine image
-2. Set hosts for messaging server in `inventory` under the group *[all]*
-3. Fill out the configuration in `messaging-config.yml`
-4. Run the playbook: `ansible-playbook messaging_server.yml -u ubuntu -i inventory -v`
+2. Set hosts for messaging server in `inventory` under the group *[messaging]*
+3. Fill out the configuration in `deploy/config/messaging-config.yml`
+4. Run the playbook in `deploy/`: `ansible-playbook messaging_server.yml -u ubuntu -i inventory -v`
 
 ### SSL setup
 
@@ -16,7 +16,7 @@ This playbook installs a persistence server for decentralized messaging, operati
 1. In the configuration, have `nginx_server_name` set to the certificate domain and `nginx_ssl` set to false
 2. Provision as above
 3. Run Certbot in the server CLI, only installing the certificate: `sudo certbot --nginx certonly`
-4. set `nginx_ssl` to true and reprovision
+4. set `nginx_ssl` to true and reprovision as in step 4 above
 
 ### Operation
 
