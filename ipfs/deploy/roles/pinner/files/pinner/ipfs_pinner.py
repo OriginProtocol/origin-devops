@@ -1,4 +1,7 @@
 #! /usr/bin/env python3
+
+# TODO: PID file
+
 import argparse
 import logging
 import sys
@@ -216,18 +219,21 @@ def run_pinner():
 
     # initialize connections
     conn = sqlite3.connect(DB_FILE)
-    conn.isolation_level = None # enable autocommit
-    cursor = conn.cursor()
+    # conn.isolation_level = None # we don't want autocommit
+    c = conn.cursor()
     ipfs_conn = ipfsapi.Client(IPFS_DOMAIN, IPFS_PORT)
     event_source = EventSource(provider, CALL_CONTRACT_NAME, LISTINGS_REGISTRY_ADDRESS, EVENT_SIGNATURE, NETWORK_ID)
 
-    # load seen hashes
-    cursor.execute("CREATE TABLE IF NOT EXISTS seen_hashes (content_hash VARCHAR(64), timestamp INTEGER)")
-    cursor.execute("SELECT * FROM seen_hashes")
+    # load hashes from database
+    c.execute("CREATE TABLE IF NOT EXISTS db_pins (content_hash VARCHAR(64), timestamp INTEGER)")
+    c.execute("SELECT * FROM db_pins")
+    conn.commit()
+    db_pins_data = dict(c.fetchall())
+    c.close()
 
-    seen_hashes_data = dict(cursor.fetchall())
-    logging.info("%s pins have been seen in IPFS but not yet in the blockchain" % (len(seen_hashes_data.keys()),))
-    logging.debug("seen hashes (raw data): %s" % (seen_hashes_data))
+    logging.info("%s db pins not yet seen in the blockchain" % (len(db_pins_data.keys()),))
+    # logging.debug("db pins: %s" % (db_pins_data))
+    logging.info("db pins: %s" % (db_pins_data))
 
     # fetch pins
     current_pins = None
@@ -247,14 +253,20 @@ def run_pinner():
     logging.info("%s current pins in IPFS" % (len(current_pins),))
     logging.debug("current pins: %s" % (current_pins,))
 
-    # if there are pins that are in the DB but not in IPFS, those should be removed
-    num_seen_but_not_in_ipfs = 0
-    for seen_hash in seen_hashes_data.keys():
-        if seen_hash not in current_pins:
-            del seen_hashes_data[seen_hash]
-            num_seen_but_not_in_ipfs += 1
+    # TEMP for testing demo
+    # sys.exit(0)
 
-    logging.info("%s pins were removed from seen hashes because they are not in IPFS" % (num_seen_but_not_in_ipfs,))
+    # if there are pins that are in the DB but not in IPFS, those are stale 
+    stale_pins = []
+    for db_pin in db_pins_data.keys():
+        if db_pin not in current_pins:
+            stale_pins.append(db_pin)
+ 
+    num_stale_pins = len(stale_pins)
+    for stale_pin in stale_pins:
+        del db_pins_data[stale_pin]
+
+    logging.info("%s stale pins were removed (not currently in IPFS)" % (num_stale_pins,))
 
     # fetch Origin content hashes
     origin_content_hashes = None
@@ -267,25 +279,30 @@ def run_pinner():
     logging.info("%s Origin content hashes in blockchain event logs" % (len(origin_content_hashes),))
     logging.debug("Origin content hashes: %s" % (origin_content_hashes,))
 
+    # remove db pins that have now been seen in the blockchain
+    for origin_hash in origin_content_hashes:
+        if db_pins_data.get(origin_hash):
+            del db_pins_data[origin_hash]
+
     # extract sets and pin / unpin:
     pinned_not_origin = current_pins.difference(origin_content_hashes)
     should_be_pinned = origin_content_hashes.difference(current_pins)
 
 
     logging.info("%s current pins are not origin related" % (len(pinned_not_origin),))
-    seen_hashes = seen_hashes_data.keys()
-    num_new_seen_hashes = 0
+    db_hashes = db_pins_data.keys()
+    num_new_db_hashes = 0
     num_removed_hashes = 0
     for ipfs_hash in pinned_not_origin:
-        if ipfs_hash not in seen_hashes:
-            seen_hashes_data[ipfs_hash] = int(time.time())
-            num_new_seen_hashes += 1
-        elif ipfs_hash in seen_hashes:
-            if(int(time.time()) - int(seen_hashes_data[ipfs_hash]) > GRACE_PERIOD):
-                del seen_hashes_data[ipfs_hash]
+        if ipfs_hash not in db_hashes:
+            db_pins_data[ipfs_hash] = int(time.time())
+            num_new_db_hashes += 1
+        elif ipfs_hash in db_hashes:
+            if(int(time.time()) - int(db_pins_data[ipfs_hash]) > GRACE_PERIOD):
                 ipfs_conn.pin_rm(ipfs_hash, recursive=True)
+                del db_pins_data[ipfs_hash]
                 num_removed_hashes += 1
-    logging.info("Added %s hashes to seen hashes" % (num_new_seen_hashes,))
+    logging.info("Added %s hashes to seen hashes" % (num_new_db_hashes,))
     logging.info("Unpinned %s hashes" % (num_removed_hashes,))
 
     logging.info("%s hashes to pin" % (len(should_be_pinned),))
@@ -299,14 +316,19 @@ def run_pinner():
     logging.info("pinned %s hashes in %ss" % (num_pinned_hashes, int(time.time() - pinning_start_time),))
 
     # write seen hashes back to DB
-    logging.info("%s seen hashes after run" % (len(seen_hashes_data.keys()),))
-    seen_hashes_tuples = [(ipfs_hash, time_seen) for ipfs_hash, time_seen in seen_hashes_data.items()]
+    logging.info("%s seen hashes after run" % (len(db_pins_data.keys()),))
+    seen_hashes_tuples = [(ipfs_hash, time_seen) for ipfs_hash, time_seen in db_pins_data.items()]
 
-    cursor.execute("DELETE FROM seen_hashes")
-    cursor.executemany("INSERT INTO seen_hashes VALUES (?,?)", seen_hashes_tuples)
-    cursor.execute("SELECT COUNT(*) from seen_hashes")
+    c = conn.cursor()
+    c.execute("DELETE FROM db_pins")
+    c.executemany("INSERT INTO db_pins VALUES (?,?)", seen_hashes_tuples)
+    c.execute("SELECT COUNT(*) from db_pins")
+    conn.commit()
+    num_inserted_hashes = c.fetchone()[0]
+    c.close()
 
-    num_inserted_hashes = cursor.fetchone()[0]
+
+    
     logging.info("%s seen hashes inserted into DB" % (num_inserted_hashes,))
 
     # end
