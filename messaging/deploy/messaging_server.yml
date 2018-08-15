@@ -20,9 +20,24 @@
         - python3
         - python-pip
         - python3-pip
+    - name: add certbot repository
+      repo: ppa:certbot/certbot
+    - name: install certbot
+      apt:
+        name: python-certbot-nginx
+        update_cache: yes
   roles:
     - htpasswd
     - nginx
-    - ipfs
+    # - ipfs
     - orbit
     - prometheus_exporters
+  post_tasks:
+    - meta: flush_handlers
+    - name: register generated IPFS config
+      slurp:
+        src: "{{ messaging_directory }}/ipfsrepo/config"
+      register: ipfs_config
+    # - name: Print IPFS config (containing peerID)
+    #   debug:
+    #     msg: "{{ ipfs_config | b64decode }}"

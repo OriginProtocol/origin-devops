@@ -40,8 +40,18 @@ http {
         server 127.0.0.1:{{ ipfs_websocket_port }};
     }
 
+    # For Certbot
+    # https://community.letsencrypt.org/t/how-to-nginx-configuration-to-enable-acme-challenge-support-on-all-http-virtual-hosts/5622
+    server {
+        listen 80;
+        location ^~ /.well-known/acme-challenge/ {
+            root         /var/www/letsencrypt;
+        }
+    }
+
     server {
         listen               {{ nginx_ipfs_api_proxy_port }};
+        server_name          {{ nginx_server_name }};
 
         # set client body size to 2M
         client_max_body_size 2M;
@@ -62,7 +72,18 @@ http {
     }
 
     server {
-        listen                 {{ nginx_ipfs_websocket_proxy_port }};
+        {% if nginx_ssl == true %}
+            listen {{ nginx_ipfs_websocket_proxy_port }} ssl; # managed by Certbot
+            ssl_certificate /etc/letsencrypt/live/{{ nginx_server_name }}/fullchain.pem; # managed by Certbot
+            ssl_certificate_key /etc/letsencrypt/live/{{ nginx_server_name }}/privkey.pem; # managed by Certbot
+            include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+            ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+        {% else %}
+            listen                 {{ nginx_ipfs_websocket_proxy_port }};
+        {% endif %}
+
+
+        server_name            {{ nginx_server_name }};
 
         location / {
             proxy_http_version 1.1;
@@ -72,7 +93,7 @@ http {
             proxy_set_header   X-Real-IP $remote_addr;
 
             proxy_pass              http://ipfs_websocket;
-            proxy_read_timeout      30; # client timeout < proxy_read_timeout < IPFS timeout
+            proxy_read_timeout 86400; # http://nginx.org/en/docs/http/websocket.html
 
         }
 

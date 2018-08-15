@@ -35,7 +35,8 @@
     # - { key: 'Addresses.Gateway', value: '/ip4/{{ ipfs_address }}/tcp/{{ ipfs_gateway_port }}'} This is turned off for messaging
   become: yes
   become_user: ubuntu
-  notify: restart ipfs service
+  notify: stop ipfs service
+  # notify: restart ipfs service
 
 # ansible passes string in as unicode (u'value) and ipfs isn't able to unmarshall that format
 - set_fact:
@@ -63,7 +64,8 @@
     # - { key: 'API.HTTPHeaders.Access-Control-Allow-Credentials', value: "{{ cors_credentials | to_yaml }}" }
   become: yes
   become_user: ubuntu
-  notify: restart ipfs service
+  notify: stop ipfs service
+  # notify: restart ipfs service
 
 - name: enable ipfs service
   systemd:

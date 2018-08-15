@@ -35,6 +35,14 @@
     group: ubuntu
     mode: 0755
 
+- name: .env file
+  template:
+    src: dot_env.j2
+    dest: "{{ messaging_directory }}/.env"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+
 - name: orbit_server js directory exists
   file:
     path: "{{ messaging_directory }}/js/messaging"
