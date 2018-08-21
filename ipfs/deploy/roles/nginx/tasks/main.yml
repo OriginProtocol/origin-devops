@@ -1,0 +1,49 @@
+---
+- name: nginx directory exists
+  file:
+    path: "{{ nginx_directory }}"
+    owner: www-data
+    group: www-data
+    mode: 0755
+    state: directory
+
+- name: install nginx
+  apt:
+    pkg: nginx
+    state: present
+    update_cache: yes
+
+# TODO: SSL
+- name: configure nginx
+  template:
+    src: nginx.conf.j2
+    dest: "{{ nginx_directory }}/nginx.conf"
+    owner: www-data
+    group: www-data
+    backup: yes
+
+- name: remove default nginx config
+  file:
+    path: /etc/nginx/nginx.conf
+    state: absent
+
+- name: link default nginx config location
+  file:
+    src: "{{ nginx_directory }}/nginx.conf"
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    state: link
+
+# https://www.nginx.com/resources/wiki/start/topics/examples/systemd/
+- name:  nginx systemd configuration
+  template:
+    src: nginx.service.j2
+    dest: /etc/systemd/system/nginx.service
+  notify: restart nginx service
+
+- name: enable nginx service
+  systemd:
+    name: nginx
+    enabled: yes
+    masked: no

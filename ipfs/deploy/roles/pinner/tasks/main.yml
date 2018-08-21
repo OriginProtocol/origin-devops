@@ -1,0 +1,77 @@
+---
+- name: pinner directory
+  file:
+    path: "{{ ipfs_pinner_directory }}"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+    state: directory
+
+- name: pinner config directory
+  file:
+    path: "{{ ipfs_pinner_directory }}/config"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+    state: directory
+
+- name: pinner contract directory
+  file:
+    path: "{{ ipfs_pinner_directory }}/contracts"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+    state: directory
+
+- name: copy pinner files to pinner directory
+  copy:
+    src: "{{ item }}"
+    dest: "{{ ipfs_pinner_directory }}"
+    owner: ubuntu
+    group: ubuntu
+    mode: 07  55
+  with_items:
+    - pinner/contract.py
+    - pinner/ipfs.py
+    - pinner/ipfs_pinner.py
+    - pinner/requirements.txt
+
+# - name: copy pinner config files to pinner config directory
+#   copy:
+#     src: "pinner/config/{{ item }}"
+#     dest: "{{ ipfs_pinner_directory }}/config"
+#     owner: ubuntu
+#     group: ubuntu
+#     mode: 0755
+#   with_items:
+#     - config_ropsten.json
+#     - config_rinkeby.json
+
+# AH: This will be replaced by event listener
+# - name: copy pinner contract files to pinner contract directory
+#   copy:
+#     src: "pinner/contracts/{{ item }}"
+#     dest: "{{ ipfs_pinner_directory }}/contracts"
+#     owner: ubuntu
+#     group: ubuntu
+#     mode: 0755
+#   with_items:
+#     - ListingsRegistry.json
+
+# - name: install requirements.txt
+#   pip:
+#     requirements: "{{ ipfs_pinner_directory }}/requirements.txt"
+
+# TODO: make a non-ubuntu user to run pinner with
+# TODO: stagger / randomize cron runs
+# - name: set cronjobs to run pinners
+#   cron:
+#     name: "run pinner for config {{ item }}"
+#     minute: 0
+#     user: root
+#     job: "{{ ipfs_pinner_directory }}/ipfs_pinner.py -c {{ ipfs_pinner_directory }}/config/{{ item }}"
+#   with_items:
+#       - config_rinkeby.json
+#       - config_ropsten.json
+
+# TODO: logging for pinner
