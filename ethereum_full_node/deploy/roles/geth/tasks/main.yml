@@ -1,0 +1,64 @@
+---
+- name: geth user's group
+  group:
+    name: "{{ geth_user_group }}"
+    state: present
+
+- name: geth user
+  user:
+    name: "{{ geth_user }}"
+    comment: Geth user
+    group: "{{ geth_user_group }}"
+    state: present
+    # create_home: no <-- TODO: service users should not have a home directory or shell, but doing this for the ubuntu (SSH) user causes SSH to close after login
+    # shell: /bin/false
+
+# Todo: using journald, configure equivalent of logrotate, and also see about writing to files
+# - name: Log directory
+#   file:
+#       path: "{{ geth_log_directory }}"
+#       state: directory
+#       mode: 0750
+#       owner: "{{ geth_user }}"
+#       group: "{{ geth_user_group }}"
+
+- name: geth home directory
+  file:
+      path: "{{ geth_home_directory }}"
+      state: directory
+      mode: 0755
+      owner: "{{ geth_user }}"
+      group: "{{ geth_user_group }}"
+
+- apt_repository:
+    repo: ppa:ethereum/ethereum
+
+- name: install Ethereum
+  apt:
+    name: ethereum
+    update_cache: yes
+
+- name: geth systemd configuration
+  template:
+    src: geth.service.j2
+    dest: /etc/systemd/system/geth.service
+  notify: restart geth service
+
+- name: enable geth service
+  systemd:
+    name: geth
+    enabled: yes
+    masked: no
+
+# may need postrotate line to restart geth after rotating logs
+# Todo: using journald, configure equivalent of logrotate, and also see about writing to files
+# - name: configure logrotate
+#   template:
+#     src: geth.j2
+#     dest: /etc/logrotate.d/geth
+#     owner: root
+#     group: root
+#     mode: 0644
+
+# - name: enable logrotate
+#   shell: logrotate -f -v /etc/logrotate.d/geth

@@ -1,0 +1,19 @@
+---
+ansible_ssh_private_key_file: <key if needed>
+
+geth_rpc_address: 127.0.0.1
+geth_rpc_port: 8545
+geth_cache_size: 3072
+trie_cache_gens: 1024
+geth_user: ubuntu #geth
+geth_user_group: ubuntu # geth
+geth_log_directory: /var/log/geth
+geth_home_directory: /opt/geth
+
+nginx_directory: /opt/nginx
+nginx_log_directory: /var/log/nginx
+nginx_access_log: /var/log/nginx/access.log
+nginx_error_log: /var/log/nginx/error.log
+nginx_auth_user: <user>
+nginx_auth_password: <password>
+nginx_auth_file: /etc/nginx/.htpasswd
