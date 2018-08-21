@@ -1,0 +1,2 @@
+[all]
+xx.xx.xx.xx				ansible_python_interpreter=/usr/bin/python3

@@ -1,0 +1,12 @@
+---
+# running js-ipfs, so making sure go-ipfs is not running
+- name: stop ipfs service
+  systemd:
+    state: stopped
+    daemon_reload: yes
+    name: ipfs
+# - name: restart ipfs service
+#   systemd:
+#     state: restarted
+#     daemon_reload: yes
+#     name: ipfs

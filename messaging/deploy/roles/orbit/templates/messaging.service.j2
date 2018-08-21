@@ -1,0 +1,23 @@
+[Unit]
+Description=Orbit / Messaging
+After=syslog.target network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+WorkingDirectory={{ messaging_directory }}
+Environment=NODE_PATH=/opt/orbit/node_modules
+Environment=MESSAGING_NAMESPACE={{ messaging_namespace }}
+Environment=HOME={{ messaging_directory }}
+Environment=RPC_SERVER={{ messaging_rpc_server }}
+Environment=MESSAGING_IPFS_WS_ADDRESS={{ messaging_ipfs_ws_address }}
+Type=forking
+ExecStart=/usr/bin/npx babel-node js/messaging/orbit_server.js
+KillMode=process
+KillSignal=SIGINT
+TimeoutStopSec=90
+Restart=always
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,96 @@
+---
+# node.js installation could be seperated out into a role dependency of orbit
+
+- name: add node 10.x PPA
+  script: nodesource_setup.sh
+  become: yes
+
+- name: install nodejs
+  apt:
+    name: nodejs
+    state: present
+    update_cache: yes
+
+- name: messaging directory exists
+  file:
+    path: "{{ messaging_directory }}"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+    state: directory
+
+- name: package.json
+  copy:
+    src: package.json
+    dest: "{{ messaging_directory }}"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+
+- name: .babelrc file
+  copy:
+    src: dot_babelrc
+    dest: "{{ messaging_directory }}/.babelrc"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+
+- name: .env file
+  template:
+    src: dot_env.j2
+    dest: "{{ messaging_directory }}/.env"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+
+- name: orbit_server js directory exists
+  file:
+    path: "{{ messaging_directory }}/js/messaging"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+    state: directory
+
+- name: orbit_server.js
+  copy:
+    src: orbit_server.js
+    dest: "{{ messaging_directory }}/js/messaging"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0644
+
+- name: exchange-heads.js
+  copy:
+    src: exchange-heads.js
+    dest: "{{ messaging_directory }}/js/messaging"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0644
+
+- name: messaging node modules directory exists
+  file:
+    path: "{{ messaging_directory }}/node_modules"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+    state: directory
+
+- name: install npm libraries
+  become: yes
+  become_user: ubuntu
+  npm:
+    state: latest
+    path: "{{ messaging_directory }}"
+    executable: /usr/bin/npm
+
+- name: messaging systemd configuration
+  template:
+    src: messaging.service.j2
+    dest: /etc/systemd/system/messaging.service
+  notify: restart messaging service
+
+- name: enable messaging service
+  systemd:
+    name: messaging
+    enabled: yes
+    masked: no

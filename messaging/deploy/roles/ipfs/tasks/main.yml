@@ -1,0 +1,74 @@
+---
+- name: download and unarchive IPFS
+  unarchive:
+    src: "{{ ipfs_download_url }}"
+    dest: /tmp
+    remote_src: yes
+
+- name: install IPFS
+  shell: "./install.sh"
+  args:
+    chdir: /tmp/go-ipfs
+
+- name: ipfs systemd configuration
+  template:
+    src: ipfs.service.j2
+    dest: /etc/systemd/system/ipfs.service
+
+# TODO: This should write the private key if exists
+- name: init IPFS
+  shell: ipfs init
+  ignore_errors: yes
+  become: yes
+  become_user: ubuntu
+
+- name: register IPFS peer ID
+  shell: ipfs config Identity.PeerID
+  register: ipfs_peer_id
+  become: yes
+  become_user: ubuntu
+
+- name: configure IPFS
+  shell: "ipfs config {{ item.key }} {{ item.value }}"
+  with_items:
+    - { key: 'Addresses.API', value: '/ip4/{{ ipfs_address }}/tcp/{{ ipfs_api_port }}'}
+    # - { key: 'Addresses.Gateway', value: '/ip4/{{ ipfs_address }}/tcp/{{ ipfs_gateway_port }}'} This is turned off for messaging
+  become: yes
+  become_user: ubuntu
+  notify: stop ipfs service
+  # notify: restart ipfs service
+
+# ansible passes string in as unicode (u'value) and ipfs isn't able to unmarshall that format
+- set_fact:
+    cors_origin: '["*"]'
+- set_fact:
+    cors_methods: '["POST"]'
+# - set_fact:
+#     cors_credentials: '\"true\"'
+# - set_fact:
+#     swarm_addresses: '[\"/ip4/0.0.0.0/tcp/4001\",\"/ip6/::/tcp/4001\",\"/ip4/0.0.0.0/tcp/{{ ipfs_websocket_port }}/ws\"]'
+
+- shell: 'ipfs config Addresses.Swarm --json [\"/ip4/0.0.0.0/tcp/4001\",\"/ip4/0.0.0.0/tcp/{{ ipfs_websocket_port }}/ws\"]'
+  become_user: ubuntu
+
+- shell: 'ipfs config --json API.HTTPHeaders.Access-Control-Allow-Credentials [\"true\"]'
+  become_user: ubuntu
+
+- name: configure IPFS json fields
+  shell: "ipfs config --json {{ item.key }} {{ item.value }}"
+  with_items:
+    # - { key: 'Addresses.Swarm', value: "{{ swarm_addresses | to_yaml }}" }
+    - { key: 'API.HTTPHeaders.Server', value: '[]' }
+    - { key: 'API.HTTPHeaders.Access-Control-Allow-Origin', value: "{{ cors_origin | to_yaml }}" }
+    - { key: 'API.HTTPHeaders.Access-Control-Allow-Methods', value: "{{ cors_methods | to_yaml }}" }
+    # - { key: 'API.HTTPHeaders.Access-Control-Allow-Credentials', value: "{{ cors_credentials | to_yaml }}" }
+  become: yes
+  become_user: ubuntu
+  notify: stop ipfs service
+  # notify: restart ipfs service
+
+- name: enable ipfs service
+  systemd:
+    name: ipfs
+    enabled: yes
+    masked: no
