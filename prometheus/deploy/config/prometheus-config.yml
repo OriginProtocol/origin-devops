@@ -1,0 +1,18 @@
+---
+ansible_ssh_private_key_file: <if required>
+
+nginx_directory: /opt/nginx
+nginx_log_directory: /var/log/nginx
+nginx_access_log: /var/log/nginx/access.log
+nginx_error_log: /var/log/nginx/error.log
+nginx_auth_user: <user>
+nginx_auth_password: <password>
+nginx_auth_file: /etc/nginx/.htpasswd
+nginx_prometheus_proxy_port: 80
+
+prometheus_port: 9090
+prometheus_download_url: https://github.com/prometheus/prometheus/releases/download/v2.3.1/prometheus-2.3.1.linux-amd64.tar.gz
+prometheus_checksum: adb76021fcff8a2a8363de8739fcb7ff5647c2a0ff90b2c02dcb56cf0cd836f0
+
+# node_exporter_download_url: https://github.com/prometheus/node_exporter/releases/download/v0.16.0/node_exporter-0.16.0.linux-amd64.tar.gz
+# node_exporter_checksum: e92a601a5ef4f77cce967266b488a978711dabc527a720bea26505cba426c029

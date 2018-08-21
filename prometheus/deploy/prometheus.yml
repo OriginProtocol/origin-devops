@@ -1,0 +1,27 @@
+---
+- hosts: all
+  vars_files:
+    - config/prometheus-config.yml
+  become: yes
+  pre_tasks:
+    - hostname:
+        name: prometheus
+    - name: Packages for managing PPAs
+      apt:
+        name: software-properties-common
+        state: latest
+        update_cache: yes
+    - name: install python and pip
+      apt:
+        name: "{{ item }}"
+        update_cache: yes
+      with_items:
+        - python2.7
+        - python3
+        - python-pip
+        - python3-pip
+  roles:
+    - htpasswd
+    - nginx
+    - prometheus
+    - prometheus_exporters
