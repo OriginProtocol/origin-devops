@@ -9,7 +9,8 @@ This playbook installs an [IPFS](https://ipfs.io/) gateway.
 2. Set hosts for IPFS servers in `inventory` under the group *[gateways]*
 3. Fill out the configuration in `config/gateway-config.yml`
 4. Run the playbook: `ansible-playbook ipfs_gateway.yml -u ubuntu -i inventory -v`
-
+5. Install SSL (see below)
+6. Add each node's `multiaddr` to the others' Bootstrap list (under `ipfs config`)
 
 ### Default external ports
 - 80: configured for Certbot challenge response (see "SSL" below)
@@ -23,6 +24,8 @@ Prometheus is used for monitoring the deployment, and an ansible role for instal
 ### SSL
 
 SSL is recommended and can be manually configured via [Certbot](certbot.eff.org), a free certificate provider managed by the EFF. The default NGINX configuration includes a route on port 80 for the Certbot challenge response request.
+
+When there are multiple servers to be configured (IE the domain resolves to multiple IPs), the Certbot's ACME domain validation request (sent from Certbot) may not go to the server that initiated the domain validation. All servers can be configured to redirect ACME challenge response requests to a server which retrieves/renews the cert, and that server can also push renewals out to the other servers
 
 ### Future features
 
