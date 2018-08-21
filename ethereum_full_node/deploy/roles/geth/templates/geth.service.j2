@@ -1,0 +1,18 @@
+[Unit]
+Description=Ethereum go client (Geth)
+After=syslog.target network.target
+
+[Service]
+User={{ geth_user }}
+Group={{ geth_user_group }}
+Environment=HOME={{ geth_home_directory }}
+Type=simple
+ExecStart=/usr/bin/geth --syncmode fast --nousb --cache {{ geth_cache_size }} --trie-cache-gens {{ trie_cache_gens }} --rpc --rpcaddr {{ geth_rpc_address }} --rpcport {{ geth_rpc_port }} {{ geth_network }}  2>&1
+KillMode=process
+KillSignal=SIGINT
+TimeoutStopSec=90
+Restart=always
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

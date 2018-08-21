@@ -1,0 +1,6 @@
+---
+- name: restart geth service
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: geth

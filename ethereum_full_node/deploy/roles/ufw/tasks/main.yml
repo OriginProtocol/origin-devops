@@ -1,0 +1,36 @@
+- name: Make sure UFW is installed
+  apt:
+    name: ufw
+    state: latest
+
+- name: Disallow incoming traffic by default
+  ufw:
+    direction: incoming
+    policy: deny
+
+- name: Allow outgoing traffic by default
+  ufw:
+    direction: outgoing
+    policy: allow
+
+# geth uses both tcp and udp 30303 (traffic and peering)
+- name: Allow traffic on Ethereum port
+  ufw:
+    rule: allow
+    port: 30303
+    proto: any
+
+- name: Allow SSH
+  ufw:
+    rule: allow
+    port: ssh
+
+- name: SSH connection rate limiting
+  ufw:
+    rule: limit
+    port: ssh
+    proto: tcp
+
+- name: Enable UFW
+  ufw:
+    state: enabled

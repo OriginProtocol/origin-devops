@@ -1,0 +1,20 @@
+[rinkeby]
+xx.xx.xx.xx	ansible_python_interpreter=/usr/bin/python3
+
+[ropsten]
+xx.xx.xx.xx	ansible_python_interpreter=/usr/bin/python3
+
+[mainnet]
+xx.xx.xx.xx	ansible_python_interpreter=/usr/bin/python3
+
+[rinkeby:vars]
+network_id=4
+geth_network="--rinkeby"
+
+[ropsten:vars]
+network_id=3
+geth_network="--testnet"
+
+[mainnet:vars]
+network_id=1
+geth_network=""

@@ -1,0 +1,44 @@
+---
+- hosts: all
+  vars_files:
+    - config/full-node-config.yml
+  become: yes
+  pre_tasks:
+    - hostname:
+        name: Mainnet
+      when: network_id|int==1
+    - set_fact:
+        geth_network: ""
+      when: network_id|int==1
+    - hostname:
+        name: Rinkeby
+      when: network_id|int==4
+    - set_fact:
+        geth_network: "--rinkeby"
+      when: network_id|int==4
+    - hostname:
+        name: Ropsten
+      when: network_id|int==3
+    - set_fact:
+        geth_network: "--testnet"
+      when: network_id|int==3
+    - name: Packages for managing PPAs
+      apt:
+        name: software-properties-common
+        state: latest
+        update_cache: yes
+    - name: install python and pip
+      apt:
+        name: "{{ item }}"
+        update_cache: yes
+      with_items:
+        - python2.7
+        - python3
+        - python-pip
+        - python3-pip
+  roles:
+      - htpasswd
+      - nginx
+      - geth
+      - ufw
+      - prometheus_exporters
