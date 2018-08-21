@@ -3,7 +3,7 @@
 	"db_file": "pinner.db",
 	"log_file": "pinner.log",
 	"log_level": "INFO",
-	"ipfs_domain": "http://127.0.0.1",
+	"ipfs_domain": "127.0.0.1",
 	"ipfs_port": 5002,
 	"provider_url": "http://127.0.0.1:8545",
 	"network_id": 999,

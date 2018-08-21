@@ -13,7 +13,8 @@ const request = require('request-promise')
 
 const sqlite3 = require('sqlite3').verbose()
 const assert = require('assert')
-const execSync = require('child_process').execSync
+const { execSync } = require('child_process')
+const execAsync = require('child_process').exec
 
 const web3Provider = new Web3.providers.HttpProvider('http://localhost:8545')
 const web3 = new Web3(web3Provider)
@@ -24,7 +25,7 @@ const configB = require("./config/config_local_test_b.json")
 if(configA['grace_period'] !== configB['grace_period']) {
     throw("Error: the two configs must have the same grace period")
 }
-const gracePeriod = parseInt(configA['grade_period'])
+const gracePeriod = parseInt(configA['grace_period'])
 
 // const ipfsA = ipfsAPI(configA['ipfs_domain'], '5001', { protocol: 'http' })
 // const ipfsB = ipfsAPI(configB['ipfs_domain'], '5002', { protocol: 'http' })
@@ -194,7 +195,7 @@ async function testPinners() {
             assert.fail("pins in IPFS A do not contain all hashes: " + hashes)
         }
     }) 
-    console.test_log("IPFS A contains all uploaded content (origin + non-origin)")
+    console.test_log("IPFS A contains all uploaded content (Origin + non-Origin)")
 
     var ipfsHashesB = await getIpfsPins(configB)
     var hashes = hashesOriginB.concat(hashesNonOriginB)
@@ -214,14 +215,16 @@ async function testPinners() {
     // const db = new sqlite3.Database('pinner.db')
     var dbPinsA = await readDbPins(dbA)
     if (!arrayEqual(dbPinsA, hashesNonOriginA)) {
-        assert.fail("pins in DB A (" + dbPinsA + ") do not coresspond to non-origin hashes in A (" + hashesNonOriginA + ")")
+        assert.fail("pins in DB A (" + dbPinsA + ") do not coresspond to non-Origin hashes in A (" + hashesNonOriginA + ")")
     }
     // console.test_log(hashesNonOriginA)
     var dbPinsB = await readDbPins(dbB)
     // console.test_log(hashesNonOriginB)
     if (!arrayEqual(dbPinsB, hashesNonOriginB)) {
-        assert.fail("pins in DB B (" + dbPinsB + ") do not coresspond to non-origin hashes in B (" + hashesNonOriginB + ")")
+        assert.fail("pins in DB B (" + dbPinsB + ") do not coresspond to non-Origin hashes in B (" + hashesNonOriginB + ")")
     }
+
+    console.test_log("pins in both DBs correspond to non-Origin hashes")
 
     // assert IPFS pins: all origin content should now exist on both IPFS servers
     let allOriginHashes = hashesOriginA.concat(hashesOriginB)
@@ -235,6 +238,8 @@ async function testPinners() {
             assert.fail("Not all origin hashes are in IPFS B post-pinning")
         }
     })
+
+    console.test_log("all Origin hashes are pinned in both IPFS nodes")
 
     // Pause to wait for grace period to expire
     console.test_log("waiting " + gracePeriod + " seconds for grace period to expire")
@@ -255,6 +260,8 @@ async function testPinners() {
         assert("IPFS B does not have all origin content pinned after second run")
     }
 
+    console.test_log("ONLY Origin hashes are pinned in both IPFS nodes")
+
     // assert DB state: there should be entries corresponding to non-origin content
     // const db = new sqlite3.Database('pinner.db')
     var dbPinsA = await readDbPins(dbA)
@@ -268,7 +275,11 @@ async function testPinners() {
 
     }
 
+    console.test_log("Both DBs are empty after grace period expiration")
+
+    console.test_log("--------------------")
     console.test_log("TEST RUN OK.")
+
 }
 
 

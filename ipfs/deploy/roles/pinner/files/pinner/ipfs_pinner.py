@@ -1,10 +1,8 @@
 #! /usr/bin/env python3
-
-# TODO: PID file
-
 import argparse
 import logging
 import sys
+import os
 import json
 import sqlite3
 import requests
@@ -28,6 +26,8 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)s [in %(pathname)s:%(lineno)d]: %(message)s',
     handlers=[stdout_handler, file_handler]
 )
+
+PID_FILE = 'pinner.pid'
 
 MAINNET_NETWORK_ID = 1
 ROPSTEN_NETWORK_ID = 3
@@ -299,20 +299,31 @@ def run_pinner():
             num_new_db_hashes += 1
         elif ipfs_hash in db_hashes:
             if(int(time.time()) - int(db_pins_data[ipfs_hash]) > GRACE_PERIOD):
-                ipfs_conn.pin_rm(ipfs_hash, recursive=True)
-                del db_pins_data[ipfs_hash]
-                num_removed_hashes += 1
+                try:
+                    ipfs_conn.pin_rm(ipfs_hash, recursive=True)
+                    del db_pins_data[ipfs_hash]
+                    num_removed_hashes += 1
+                except Exception as e:
+                    logging.error("Exception unpinning %s - (%s)" % (ipfs_hash, e))
+                    # intrument
+
     logging.info("Added %s hashes to seen hashes" % (num_new_db_hashes,))
     logging.info("Unpinned %s hashes" % (num_removed_hashes,))
 
     logging.info("%s hashes to pin" % (len(should_be_pinned),))
+    logging.info("to pin: %s" % (should_be_pinned,))
+    # logging.debug("to pin: %s" % (should_be_pinned,))
     pinning_start_time = time.time()
     num_pinned_hashes = 0
     for ipfs_hash in should_be_pinned:
-        pin_start_time = time.time()
-        ipfs_conn.pin_add(ipfs_hash, recursive=False)
-        num_pinned_hashes += 1
-        logging.debug("%s pinned in %ss" % (ipfs_hash,int(time.time() - pin_start_time),))
+        try:
+            pin_start_time = time.time()
+            ipfs_conn.pin_add(ipfs_hash, recursive=False)
+            num_pinned_hashes += 1
+            logging.debug("%s pinned in %ss" % (ipfs_hash,int(time.time() - pin_start_time),))
+        except Exception as e:
+            logging.error("Exception pinning %s - (%s)" % (ipfs_hash, e))
+            # intrument
     logging.info("pinned %s hashes in %ss" % (num_pinned_hashes, int(time.time() - pinning_start_time),))
 
     # write seen hashes back to DB
@@ -338,12 +349,28 @@ def run_pinner():
 
 
 if __name__ == '__main__':
+    pid = os.getpid()
+    if os.path.exists(PID_FILE):
+        # check if pinner is actually running, or crashed
+        f = open(PID_FILE, 'r')
+        pid = int(f.readline())
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            # remove stale PID file
+            os.remove(PID_FILE)
+        else:
+            logging.info("Previous invocation of pinner still running (PID: %s) " % (pid,))
+            sys.exit(0)
+    f = open(PID_FILE, 'w')
+    f.write(str(pid))
+    f.close()
+    
+
     parser = argparse.ArgumentParser(
         description="Pins content in the IPFS gateway if it's associated with " +
         "an Origin listing and unpins it if there's no associated listing.")
     parser.add_argument('-c', '--config', type=str, help="path to configuration file", required=True)
-    # parser.add_argument('--dry-run', action='store_true',
-    #                     help="output changes but do not execute them")
     args = parser.parse_args()
     logging.info("### Pinner run started ###")
     try:
@@ -365,3 +392,6 @@ if __name__ == '__main__':
 
     logging.info("config: %s" % (config,))
     run_pinner()
+
+    # remove PID file
+    os.remove(PID_FILE)
