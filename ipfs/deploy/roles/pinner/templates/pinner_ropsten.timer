@@ -1,0 +1,10 @@
+[Unit]
+Description=Timer for Ropsten Pinner
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=1h
+Unit=pinner_ropsten.service
+
+[Install]
+WantedBy=multi-user.target

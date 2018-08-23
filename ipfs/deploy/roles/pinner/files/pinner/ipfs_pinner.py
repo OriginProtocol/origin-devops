@@ -155,7 +155,7 @@ class EventSource:
         elif NETWORK_ID == RINKEBY_NETWORK_ID:
             self.url = "https://api-rinkeby.etherscan.io/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&topic0=%s&apikey=%s&address=%s" % (self.event_name_hash,ETHERSCAN_API_KEY,self.contract_address,)
 
-        logging.debug("Etherscan url: %s" % (url,))
+        logging.debug("Etherscan url: %s" % (self.url,))
 
         hashes = set()
 

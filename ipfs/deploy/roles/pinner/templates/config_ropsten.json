@@ -1,0 +1,13 @@
+{
+	"grace_period": {{ ipfs_pinner_grace_period }},
+	"db_file": "pinner_ropsten.db",
+	"log_file": "pinner_ropsten.log",
+	"log_level": "INFO",
+	"ipfs_domain": "127.0.0.1",
+	"ipfs_port": {{ ipfs_api_port }},
+	"provider_url": "https://ropsten.infura.io",
+	"network_id": 3,
+	"call_contract_name": "UnitListing",
+	"listings_registry_address": "{{ ropsten_listings_registry_addr }}",
+	"event_signature": "{{ new_listing_event_signature }}"
+}

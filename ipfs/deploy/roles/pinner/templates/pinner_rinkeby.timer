@@ -1,0 +1,10 @@
+[Unit]
+Description=Timer for Rinkeby Pinner
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=1h
+Unit=pinner_rinkeby.service
+
+[Install]
+WantedBy=multi-user.target
