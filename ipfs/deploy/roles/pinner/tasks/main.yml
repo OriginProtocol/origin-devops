@@ -71,6 +71,7 @@
 - name: install requirements.txt
   pip:
     requirements: "{{ ipfs_pinner_directory }}/requirements.txt"
+    virtualenv: "{{ ipfs_pinner_directory }}/ve"
 
 - name: pinner systemd unit file (rinkeby)
   template:
