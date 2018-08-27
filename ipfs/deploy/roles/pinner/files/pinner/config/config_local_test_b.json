@@ -1,0 +1,13 @@
+{
+	"grace_period": 5,
+	"db_file": "pinner_test_b.db",
+	"log_file": "pinner_test_b.log",
+	"log_level": "INFO",
+	"ipfs_domain": "127.0.0.1",
+	"ipfs_port": 5002,
+	"provider_url": "http://127.0.0.1:8545",
+	"network_id": 999,
+	"call_contract_name": "UnitListing",
+	"listings_registry_address": "0x8f0483125fcb9aaaefa9209d8e9d7b9c8b9fb90f",
+	"event_signature": "NewListing(uint256,address)"
+}

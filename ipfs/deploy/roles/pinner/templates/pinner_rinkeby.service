@@ -1,0 +1,8 @@
+[Unit]
+Description=Rinkeby Pinner
+
+[Service]
+User=ubuntu
+Group=ubuntu
+WorkingDirectory={{ ipfs_pinner_directory }}
+ExecStart={{ ipfs_pinner_directory }}/ve/bin/python ipfs_pinner.py -c {{ ipfs_pinner_directory }}/config/config_ropsten.json

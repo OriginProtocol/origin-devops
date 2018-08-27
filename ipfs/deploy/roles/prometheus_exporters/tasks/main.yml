@@ -1,0 +1,51 @@
+---
+- name: node exporter user's group
+  group:
+    name: node_exporter
+    state: present
+
+- name: create node exporter service user
+  user:
+    name: node_exporter
+    comment: node exporter user
+    group: node_exporter
+    state: present
+    create_home: no
+    shell: /bin/false
+
+- name: download node exporter
+  get_url:
+    url: "https://github.com/prometheus/node_exporter/releases/download/v0.16.0/node_exporter-0.16.0.linux-amd64.tar.gz"
+    dest: "/tmp/node_exporter-0.16.0.linux-amd64.tar.gz"
+    checksum: "sha256:e92a601a5ef4f77cce967266b488a978711dabc527a720bea26505cba426c029"
+    owner: ubuntu
+    group: ubuntu
+
+- name: unarchive node exporter
+  unarchive:
+    src: "/tmp/node_exporter-0.16.0.linux-amd64.tar.gz"
+    dest: "/tmp"
+    owner: ubuntu
+    group: ubuntu
+    remote_src: yes
+
+- name: copy binaries into PATH
+  copy:
+    src: "/tmp/node_exporter-0.16.0.linux-amd64/node_exporter"
+    dest: /usr/local/bin
+    owner: node_exporter
+    group: node_exporter
+    mode: 0755
+    remote_src: yes
+
+- name: node exporter systemd configuration
+  template:
+    src: node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+  notify: restart node_exporter service
+
+- name: enable node exporter service
+  systemd:
+    name: node_exporter
+    enabled: yes
+    masked: no

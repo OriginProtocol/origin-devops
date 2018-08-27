@@ -1,0 +1,22 @@
+---
+- hosts: gateways
+  vars_files:
+    - config/gateway-config.yml
+  become: yes
+  pre_tasks:
+    - hostname:
+        name: ipfs
+    - name: Packages for managing PPAs
+      apt:
+        name: software-properties-common
+        state: latest
+        update_cache: yes
+  roles:
+    - nginx
+    - ipfs
+    - pinner
+    - prometheus_exporters
+  post_tasks:
+    - name: Print IPFS peer ID
+      debug:
+        msg: "{{ inventory_hostname }} - {{ hostvars[inventory_hostname].ansible_hostname }}'s IPFS Peer ID: {{ ipfs_peer_id.stdout }}"

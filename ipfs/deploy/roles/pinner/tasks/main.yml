@@ -1,0 +1,114 @@
+---
+
+- name: pinner directory
+  file:
+    path: "{{ ipfs_pinner_directory }}"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+    state: directory
+
+- name: pinner config directory
+  file:
+    path: "{{ ipfs_pinner_directory }}/config"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+    state: directory
+
+- name: pinner contract directory
+  file:
+    path: "{{ ipfs_pinner_directory }}/contracts"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+    state: directory
+
+- name: copy pinner files to pinner directory
+  copy:
+    src: "{{ item }}"
+    dest: "{{ ipfs_pinner_directory }}"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+  with_items:
+    - pinner/ipfs_pinner.py
+    - pinner/requirements.txt
+
+- name: copy pinner config files to pinner config directory
+  template:
+    src: "{{ item }}"
+    dest: "{{ ipfs_pinner_directory }}/config/"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+  with_items:
+    - config_ropsten.json
+    - config_rinkeby.json
+
+- name: copy pinner contract files to pinner contract directory
+  copy:
+    src: "pinner/contracts/{{ item }}"
+    dest: "{{ ipfs_pinner_directory }}/contracts"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+  with_items:
+    - ListingsRegistry.json
+    - UnitListing.json
+
+- name: create virtualenv
+  command: "{{ python_exe }} -m venv ve"
+  args:
+    chdir: "{{ ipfs_pinner_directory }}"
+
+- name: activate virtualenv
+  shell: source ve/bin/activate
+  args:
+    chdir: "{{ ipfs_pinner_directory }}"
+    executable: /bin/bash
+
+- name: install requirements.txt
+  pip:
+    requirements: "{{ ipfs_pinner_directory }}/requirements.txt"
+    virtualenv: "{{ ipfs_pinner_directory }}/ve"
+
+- name: pinner systemd unit file (rinkeby)
+  template:
+    src: pinner_rinkeby.service
+    dest: /etc/systemd/system/
+# - name: pinner systemd unit file (ropsten)
+#   template:
+#     src: pinner_ropsten.service
+#     dest: /etc/systemd/system/
+
+- name: systemd timers to run pinners (rinkeby)
+  template:
+    src: pinner_rinkeby.timer
+    dest: /etc/systemd/system/
+- name: systemd timers to run pinners (ropsten)
+  template:
+    src: pinner_ropsten.timer
+    dest: /etc/systemd/system/
+
+- name: enable pinner services
+  systemd:
+    name: "{{ item }}"
+    enabled: yes
+    masked: no
+  with_items:
+    - pinner_rinkeby.service
+    # - pinner_ropsten.service
+
+- name: enable pinner timers
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - pinner_rinkeby.timer
+    # - pinner_ropsten.timer
+
+
+# systemd timer should enable service, provided it is named the same as the service
+# - name: enable pinner services
