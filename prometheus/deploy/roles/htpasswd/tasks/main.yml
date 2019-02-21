@@ -1,0 +1,16 @@
+---
+- name: install htpasswd
+  apt:
+    name: apache2-utils
+    state: latest
+- name: install passlib (required for htpasswd module)
+  pip:
+    name: passlib
+- name: configure http basic auth
+  htpasswd:
+    path: "{{ nginx_auth_file }}"
+    name: "{{ nginx_auth_user }}"
+    password: "{{ nginx_auth_password }}"
+    owner: root
+    group: www-data
+    mode: 0640

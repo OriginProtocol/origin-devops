@@ -1,0 +1,124 @@
+---
+- name: prometheus user's group
+  group:
+    name: prometheus
+    state: present
+
+- name: create prometheus service user
+  user:
+    name: prometheus
+    comment: prometheus user
+    group: prometheus
+    state: present
+    create_home: no
+    shell: /bin/false
+
+- name: create config directory
+  file: 
+    path: /etc/prometheus
+    state: directory
+    mode: 0755
+    owner: prometheus
+    group: prometheus
+
+- name: create data directory
+  file:
+    path: /var/lib/prometheus
+    state: directory
+    mode: 0755
+    owner: prometheus
+    group: prometheus
+
+- set_fact:
+    prometheus_compressed_file_name: "{{ prometheus_download_url | basename }}"
+
+- set_fact:
+    prometheus_uncompressed_folder_name: "{{ prometheus_download_url | basename | replace('.tar.gz','')}}"
+
+- name: download prometheus
+  get_url:
+    url: "{{ prometheus_download_url }}"
+    dest: "/tmp/{{ prometheus_compressed_file_name }}"
+    checksum: "sha256:{{ prometheus_checksum }}"
+    owner: ubuntu
+    group: ubuntu
+
+- name: unarchive prometheus
+  unarchive:
+    src: "/tmp/{{ prometheus_compressed_file_name }}"
+    dest: "/tmp"
+    owner: ubuntu
+    group: ubuntu
+    remote_src: yes
+
+- name: copy binaries into PATH
+  copy:
+    src: "/tmp/{{ prometheus_uncompressed_folder_name }}/prometheus"
+    dest: /usr/local/bin
+    owner: prometheus
+    group: prometheus
+    mode: 0755
+    remote_src: yes
+
+- name: copy binaries into PATH
+  copy:
+    src: "/tmp/{{ prometheus_uncompressed_folder_name }}/promtool"
+    dest: /usr/local/bin
+    owner: prometheus
+    group: prometheus
+    mode: 0755
+    remote_src: yes
+
+- name: create web interface consoles directory
+  file:
+    state: directory
+    path: "/etc/prometheus/consoles"
+    owner: prometheus
+    group: prometheus
+
+- name: create web interface console libraries directory
+  file:
+    state: directory
+    path: "/etc/prometheus/console_libraries"
+    owner: prometheus
+    group: prometheus
+
+# Ansible has a missing feature, doesn't support recursive copy of remote files(...?) 
+# https://github.com/ansible/ansible/pull/41222
+- name: copy web interface files
+  shell: "cp -r /tmp/{{ prometheus_uncompressed_folder_name }}/consoles /etc/prometheus/consoles"
+  # copy:
+  #   src: "/tmp/{{ prometheus_uncompressed_folder_name }}/consoles"
+  #   dest: /etc/prometheus/consoles/
+  #   owner: prometheus
+  #   group: prometheus
+  #   remote_src: yes
+  #   directory_mode: yes
+
+- name: copy web interface files
+  shell: "cp -r /tmp/{{ prometheus_uncompressed_folder_name }}/console_libraries /etc/prometheus/console_libraries"
+  # copy:
+  #   src: "/tmp/{{ prometheus_uncompressed_folder_name }}/console_libraries"
+  #   dest: /etc/prometheus/console_libraries
+  #   owner: prometheus
+  #   group: prometheus
+  #   remote_src: yes
+
+- name: prometheus configuration
+  template: 
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+
+- name: prometheus systemd configuration
+  template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+  notify: restart prometheus service
+
+- name: enable prometheus service
+  systemd:
+    name: prometheus
+    enabled: yes
+    masked: no
